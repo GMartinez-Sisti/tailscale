@@ -1432,6 +1432,21 @@ spec:
                                                     Annotations must be valid Kubernetes annotations.
                                                     https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/#syntax-and-character-set
                                                 type: object
+                                            dnsPolicy:
+                                                description: |-
+                                                    Set DNS policy for the pod.
+                                                    Defaults to "ClusterFirst".
+                                                    When HostNetwork=true, DNSPolicy is set to 'ClusterFirstWithHostNet'
+                                                    to ensure the pod can reach the kubernetes API.
+                                                    Cannot be set explicitelly.
+                                                    https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy
+                                                type: string
+                                            hostNetwork:
+                                                description: |-
+                                                    Use the host's pid namespace.
+                                                    Optional: Default to false.
+                                                    https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#scheduling
+                                                type: boolean
                                             imagePullSecrets:
                                                 description: |-
                                                     Proxy Pod's image pull Secrets.

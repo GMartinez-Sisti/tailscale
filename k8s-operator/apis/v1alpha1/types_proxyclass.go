@@ -154,6 +154,19 @@ type Pod struct {
 	// https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#scheduling
 	// +optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
+	// Use the host's pid namespace.
+	// Optional: Default to false.
+	// https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#scheduling
+	// +optional
+	HostNetwork bool `json:"hostNetwork,omitempty"`
+	// Set DNS policy for the pod.
+	// Defaults to "ClusterFirst".
+	// When HostNetwork=true, DNSPolicy is set to 'ClusterFirstWithHostNet'
+	// to ensure the pod can reach the kubernetes API.
+	// Cannot be set explicitelly.
+	// https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy
+	// +optional
+	DNSPolicy *corev1.DNSPolicy `json:"dnsPolicy,omitempty"`
 	// +optional
 }
 

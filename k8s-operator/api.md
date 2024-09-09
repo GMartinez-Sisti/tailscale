@@ -361,6 +361,8 @@ _Appears in:_
 | `nodeName` _string_ | Proxy Pod's node name.<br />https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#scheduling |  |  |
 | `nodeSelector` _object (keys:string, values:string)_ | Proxy Pod's node selector.<br />By default Tailscale Kubernetes operator does not apply any node<br />selector.<br />https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#scheduling |  |  |
 | `tolerations` _[Toleration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.3/#toleration-v1-core) array_ | Proxy Pod's tolerations.<br />By default Tailscale Kubernetes operator does not apply any<br />tolerations.<br />https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#scheduling |  |  |
+| `hostNetwork` _boolean_ | Use the host's pid namespace.<br />Optional: Default to false.<br />https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#scheduling |  |  |
+| `dnsPolicy` _[DNSPolicy](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.3/#dnspolicy-v1-core)_ | Set DNS policy for the pod.<br />Defaults to "ClusterFirst".<br />When HostNetwork=true, DNSPolicy is set to 'ClusterFirstWithHostNet'<br />to ensure the pod can reach the kubernetes API.<br />Cannot be set explicitelly.<br />https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy |  |  |
 
 
 #### ProxyClass

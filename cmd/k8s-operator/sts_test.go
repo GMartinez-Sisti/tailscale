@@ -73,6 +73,7 @@ func Test_applyProxyClassToStatefulSet(t *testing.T) {
 					NodeSelector:     map[string]string{"beta.kubernetes.io/os": "linux"},
 					Affinity:         &corev1.Affinity{NodeAffinity: &corev1.NodeAffinity{RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{}}},
 					Tolerations:      []corev1.Toleration{{Key: "", Operator: "Exists"}},
+					HostNetwork:      false,
 					TailscaleContainer: &tsapi.Container{
 						SecurityContext: &corev1.SecurityContext{
 							Privileged: ptr.To(true),
@@ -114,9 +115,20 @@ func Test_applyProxyClassToStatefulSet(t *testing.T) {
 			},
 		},
 	}
+
 	proxyClassMetrics := &tsapi.ProxyClass{
 		Spec: tsapi.ProxyClassSpec{
 			Metrics: &tsapi.Metrics{Enable: true},
+		},
+	}
+
+	proxyClassJustHostNetwork := &tsapi.ProxyClass{
+		Spec: tsapi.ProxyClassSpec{
+			StatefulSet: &tsapi.StatefulSet{
+				Pod: &tsapi.Pod{
+					HostNetwork: true,
+				},
+			},
 		},
 	}
 
@@ -159,6 +171,7 @@ func Test_applyProxyClassToStatefulSet(t *testing.T) {
 	wantSS.Spec.Template.Spec.NodeSelector = proxyClassAllOpts.Spec.StatefulSet.Pod.NodeSelector
 	wantSS.Spec.Template.Spec.Affinity = proxyClassAllOpts.Spec.StatefulSet.Pod.Affinity
 	wantSS.Spec.Template.Spec.Tolerations = proxyClassAllOpts.Spec.StatefulSet.Pod.Tolerations
+	wantSS.Spec.Template.Spec.HostNetwork = proxyClassAllOpts.Spec.StatefulSet.Pod.HostNetwork
 	wantSS.Spec.Template.Spec.Containers[0].SecurityContext = proxyClassAllOpts.Spec.StatefulSet.Pod.TailscaleContainer.SecurityContext
 	wantSS.Spec.Template.Spec.InitContainers[0].SecurityContext = proxyClassAllOpts.Spec.StatefulSet.Pod.TailscaleInitContainer.SecurityContext
 	wantSS.Spec.Template.Spec.Containers[0].Resources = proxyClassAllOpts.Spec.StatefulSet.Pod.TailscaleContainer.Resources
@@ -201,6 +214,7 @@ func Test_applyProxyClassToStatefulSet(t *testing.T) {
 	wantSS.Spec.Template.Spec.NodeSelector = proxyClassAllOpts.Spec.StatefulSet.Pod.NodeSelector
 	wantSS.Spec.Template.Spec.Affinity = proxyClassAllOpts.Spec.StatefulSet.Pod.Affinity
 	wantSS.Spec.Template.Spec.Tolerations = proxyClassAllOpts.Spec.StatefulSet.Pod.Tolerations
+	wantSS.Spec.Template.Spec.HostNetwork = proxyClassAllOpts.Spec.StatefulSet.Pod.HostNetwork
 	wantSS.Spec.Template.Spec.Containers[0].SecurityContext = proxyClassAllOpts.Spec.StatefulSet.Pod.TailscaleContainer.SecurityContext
 	wantSS.Spec.Template.Spec.Containers[0].Resources = proxyClassAllOpts.Spec.StatefulSet.Pod.TailscaleContainer.Resources
 	wantSS.Spec.Template.Spec.Containers[0].Env = append(wantSS.Spec.Template.Spec.Containers[0].Env, []corev1.EnvVar{{Name: "foo", Value: "bar"}, {Name: "TS_USERSPACE", Value: "true"}, {Name: "bar"}}...)
@@ -230,6 +244,15 @@ func Test_applyProxyClassToStatefulSet(t *testing.T) {
 	gotSS = applyProxyClassToStatefulSet(proxyClassMetrics, nonUserspaceProxySS.DeepCopy(), new(tailscaleSTSConfig), zl.Sugar())
 	if diff := cmp.Diff(gotSS, wantSS); diff != "" {
 		t.Fatalf("Unexpected result applying ProxyClass with metrics enabled to a StatefulSet (-got +want):\n%s", diff)
+	}
+
+	// 6. Test that a ProxyClass with hostNetwork enabled gets the correct DNSConfig
+	wantSS = nonUserspaceProxySS.DeepCopy()
+	wantSS.Spec.Template.Spec.HostNetwork = proxyClassJustHostNetwork.Spec.StatefulSet.Pod.HostNetwork
+	wantSS.Spec.Template.Spec.DNSPolicy = corev1.DNSClusterFirstWithHostNet
+	gotSS = applyProxyClassToStatefulSet(proxyClassJustHostNetwork, nonUserspaceProxySS.DeepCopy(), new(tailscaleSTSConfig), zl.Sugar())
+	if diff := cmp.Diff(gotSS, wantSS); diff != "" {
+		t.Fatalf("Unexpected result applying ProxyClass with hostNetwork enabled (-got +want):\n%s", diff)
 	}
 }
 
